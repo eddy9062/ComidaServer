@@ -18,7 +18,16 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     networks:
-      - backend-network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.dlgServ-prefix.stripprefix.prefixes=/comeserver"
+      - "traefik.http.routers.dlgServ.middlewares=dlgServ-prefix"
+      - "traefik.http.routers.dlgServ.rule=Host(`variedades-jireh.ddns.net`) && PathPrefix(`/comeserver`)"
+      - "traefik.http.routers.dlgServ.entrypoints=websecure" # changed
+      - "traefik.http.routers.dlgServ.tls=true"
+      - "traefik.http.routers.dlgServ.tls.certresolver=lets-encrypt" # new
+      - "traefik.http.services.dlgServ.loadbalancer.server.port=5432"    
 
   pgadmin:
     image: dpage/pgadmin4
@@ -26,18 +35,27 @@ services:
     restart: always
 
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@test.com
+      PGADMIN_DEFAULT_EMAIL: eddy9062@test.com
       PGADMIN_DEFAULT_PASSWORD: admin123
 
     ports:
       - "8080:80"
 
     networks:
-      - backend-network
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.dlgServ-prefix.stripprefix.prefixes=/pga"
+      - "traefik.http.routers.dlgServ.middlewares=dlgServ-prefix"
+      - "traefik.http.routers.dlgServ.rule=Host(`variedades-jireh.ddns.net`) && PathPrefix(`/pga`)"
+      - "traefik.http.routers.dlgServ.entrypoints=websecure" # changed
+      - "traefik.http.routers.dlgServ.tls=true"
+      - "traefik.http.routers.dlgServ.tls.certresolver=lets-encrypt" # new
+      - "traefik.http.services.dlgServ.loadbalancer.server.port=80"  
 
 volumes:
   postgres_data:
 
 networks:
-  backend-network:
-    driver: bridge
+  proxy:
+    external: true
